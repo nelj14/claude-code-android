@@ -1,0 +1,9 @@
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://api.rdsec.trendmicro.com/prod/aiendpoint/",
+    "ANTHROPIC_AUTH_TOKEN": "YOUR_AUTH_TOKEN_HERE",
+    "ANTHROPIC_MODEL": "claude-4-sonnet",
+    "ANTHROPIC_SMALL_FAST_MODEL": "claude-3.5-haiku",
+    "DISABLE_NON_ESSENTIAL_MODEL_CALLS": 1
+  }
+}

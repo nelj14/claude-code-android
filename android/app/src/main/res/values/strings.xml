@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">claude-code-app</string>
+    <string name="title_activity_main">claude-code-app</string>
+    <string name="package_name">com.example.claudecode</string>
+    <string name="custom_url_scheme">com.example.claudecode</string>
+</resources>

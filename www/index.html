@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #1a1a1a;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+        #terminal {
+            width: 100vw;
+            height: 100vh;
+            padding: 10px;
+            box-sizing: border-box;
+            background: #000;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .input-line {
+            display: flex;
+            align-items: center;
+        }
+        .prompt {
+            color: #00ff00;
+            margin-right: 5px;
+        }
+        #command-input {
+            background: transparent;
+            border: none;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            outline: none;
+            flex: 1;
+        }
+        .output {
+            margin: 5px 0;
+            color: #ffffff;
+        }
+        .error {
+            color: #ff6b6b;
+        }
+    </style>
+</head>
+<body>
+    <div id="terminal">
+        <div class="output">Claude Code Terminal</div>
+        <div class="output">Type 'help' for available commands</div>
+        <div class="input-line">
+            <span class="prompt">$</span>
+            <input type="text" id="command-input" autofocus>
+        </div>
+    </div>
+
+    <script>
+        const terminal = document.getElementById('terminal');
+        const commandInput = document.getElementById('command-input');
+        let isClaudeRunning = false;
+
+        function addOutput(text, className = 'output') {
+            const outputDiv = document.createElement('div');
+            outputDiv.className = className;
+            outputDiv.textContent = text;
+            
+            // Insert before the input line
+            const inputLine = document.querySelector('.input-line');
+            terminal.insertBefore(outputDiv, inputLine);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        function addPrompt() {
+            const inputLine = document.createElement('div');
+            inputLine.className = 'input-line';
+            inputLine.innerHTML = '<span class="prompt">$</span><input type="text" class="command-input" autofocus>';
+            terminal.appendChild(inputLine);
+            
+            const newInput = inputLine.querySelector('.command-input');
+            newInput.addEventListener('keypress', handleCommand);
+            newInput.focus();
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        function startClaude() {
+            if (isClaudeRunning) {
+                addOutput('Claude Code is already running', 'error');
+                return;
+            }
+            
+            isClaudeRunning = true;
+            addOutput('Starting Claude Code...');
+            addOutput('Claude Code is ready! Type your questions or commands.');
+            addOutput('Note: This is a simulated environment. For full functionality, use the actual Claude Code terminal.');
+        }
+
+        function handleCommand(event) {
+            if (event.key === 'Enter') {
+                const command = event.target.value.trim();
+                event.target.disabled = true;
+                
+                // Show the command that was entered
+                const commandDiv = document.createElement('div');
+                commandDiv.className = 'output';
+                commandDiv.innerHTML = '<span class="prompt">$ </span>' + command;
+                terminal.insertBefore(commandDiv, document.querySelector('.input-line'));
+                
+                // Process the command
+                processCommand(command);
+                
+                // Clear and re-enable input
+                event.target.value = '';
+                event.target.disabled = false;
+                event.target.focus();
+            }
+        }
+
+        function processCommand(command) {
+            const args = command.split(' ');
+            const cmd = args[0].toLowerCase();
+
+            switch(cmd) {
+                case 'claude':
+                    startClaude();
+                    break;
+                case 'help':
+                    addOutput('Available commands:');
+                    addOutput('  claude    - Start Claude Code');
+                    addOutput('  help      - Show this help');
+                    addOutput('  clear     - Clear terminal');
+                    addOutput('  exit      - Exit application');
+                    break;
+                case 'clear':
+                    // Remove all output except the current input line
+                    const outputs = terminal.querySelectorAll('.output');
+                    outputs.forEach(output => output.remove());
+                    break;
+                case 'exit':
+                    addOutput('Goodbye!');
+                    setTimeout(() => {
+                        if (window.Capacitor) {
+                            window.Capacitor.Plugins.App.exitApp();
+                        }
+                    }, 1000);
+                    break;
+                case '':
+                    // Empty command, just add a new prompt
+                    break;
+                default:
+                    if (isClaudeRunning) {
+                        addOutput('Sending to Claude: ' + command);
+                        addOutput('Claude response would appear here...');
+                        addOutput('(This is a demo - integrate with actual Claude Code for real responses)');
+                    } else {
+                        addOutput('Command not found: ' + cmd, 'error');
+                        addOutput('Type "help" for available commands');
+                    }
+            }
+        }
+
+        // Initialize
+        commandInput.addEventListener('keypress', handleCommand);
+        
+        // Auto-start Claude Code
+        setTimeout(() => {
+            startClaude();
+        }, 1000);
+    </script>
+</body>
+</html>
