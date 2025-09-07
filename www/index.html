@@ -145,15 +145,17 @@
                     break;
                 case 'help':
                     addOutput('📋 Available commands:');
-                    addOutput('  claude    - Start/restart Claude Code interface');
-                    addOutput('  help      - Show this help menu');
-                    addOutput('  clear     - Clear terminal screen');
-                    addOutput('  version   - Show version information');
-                    addOutput('  about     - About this terminal');
-                    addOutput('  status    - Show system status');
-                    addOutput('  exit      - Exit application');
+                    addOutput('  claude      - Start/restart Claude Code interface');
+                    addOutput('  help        - Show this help menu');
+                    addOutput('  clear       - Clear terminal screen');
+                    addOutput('  version     - Show version information');
+                    addOutput('  about       - About this terminal');
+                    addOutput('  status      - Show system status');
+                    addOutput('  token       - Set up API authentication token');
+                    addOutput('  cleartoken  - Remove saved API token');
+                    addOutput('  exit        - Exit application');
                     addOutput('');
-                    addOutput('💬 Just type your questions to interact with Claude!');
+                    addOutput('💬 After setting up your token, just type questions to interact with real Claude AI!');
                     break;
                 case 'version':
                     addOutput('Claude Code Web Terminal v1.0');
@@ -173,9 +175,23 @@
                 case 'status':
                     addOutput('📊 System Status:');
                     addOutput('• Claude Status: ' + (isClaudeRunning ? '🟢 Running' : '🔴 Stopped'));
+                    addOutput('• API Token: ' + (localStorage.getItem('claude_auth_token') ? '🟢 Configured' : '🔴 Not set'));
                     addOutput('• Browser: ' + navigator.userAgent.split('(')[0]);
                     addOutput('• Platform: ' + navigator.platform);
                     addOutput('• Screen: ' + screen.width + 'x' + screen.height);
+                    break;
+                case 'token':
+                    const newToken = prompt('Enter your Claude API token:');
+                    if (newToken) {
+                        localStorage.setItem('claude_auth_token', newToken);
+                        addOutput('✅ API token updated successfully');
+                    } else {
+                        addOutput('❌ Token setup cancelled');
+                    }
+                    break;
+                case 'cleartoken':
+                    localStorage.removeItem('claude_auth_token');
+                    addOutput('🗑️ API token cleared');
                     break;
                 case 'clear':
                     // Remove all output except the current input line
@@ -204,7 +220,7 @@
             }
         }
 
-        function simulateClaudeResponse(command) {
+        async function simulateClaudeResponse(command) {
             // Add typing indicator
             const typingDiv = document.createElement('div');
             typingDiv.className = 'output';
@@ -213,21 +229,72 @@
             terminal.insertBefore(typingDiv, inputLine);
             terminal.scrollTop = terminal.scrollHeight;
 
-            // Simulate processing delay
-            setTimeout(() => {
+            try {
+                // Call real Claude API
+                const response = await callClaudeAPI(command);
                 typingDiv.remove();
-                
-                // Generate response based on command
-                let response = generateResponse(command);
                 addOutput('🤖 Claude: ' + response);
+            } catch (error) {
+                typingDiv.remove();
+                addOutput('❌ Error: ' + error.message, 'error');
+                addOutput('💡 Using fallback response...', 'error');
                 
-                // Add some helpful suggestions
-                if (Math.random() > 0.7) {
-                    setTimeout(() => {
-                        addOutput('💡 Tip: Try asking me about coding, writing, or analysis tasks!');
-                    }, 500);
+                // Fallback to simulation if API fails
+                let fallbackResponse = generateResponse(command);
+                addOutput('🤖 Claude (offline): ' + fallbackResponse);
+            }
+        }
+
+        async function callClaudeAPI(message) {
+            const API_URL = 'https://api.rdsec.trendmicro.com/prod/aiendpoint/v1/messages';
+            const API_TOKEN = await getAuthToken();
+            
+            if (!API_TOKEN) {
+                throw new Error('No authentication token available. Please set up your API credentials.');
+            }
+
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${API_TOKEN}`,
+                    'anthropic-version': '2023-06-01'
+                },
+                body: JSON.stringify({
+                    model: 'claude-4-sonnet',
+                    max_tokens: 1000,
+                    messages: [{
+                        role: 'user',
+                        content: message
+                    }]
+                })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`API request failed: ${response.status} - ${errorText}`);
+            }
+
+            const data = await response.json();
+            return data.content[0].text;
+        }
+
+        async function getAuthToken() {
+            // For security, we'll prompt user to enter their token
+            // In a real app, this would be stored securely
+            let token = localStorage.getItem('claude_auth_token');
+            
+            if (!token) {
+                token = prompt('Please enter your Claude API token:');
+                if (token) {
+                    localStorage.setItem('claude_auth_token', token);
+                    addOutput('✅ Token saved locally (for this browser session)');
+                } else {
+                    return null;
                 }
-            }, 1000 + Math.random() * 2000);
+            }
+            
+            return token;
         }
 
         function generateResponse(command) {
