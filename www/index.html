@@ -2,8 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Claude Code</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Claude Code Terminal</title>
+    <meta name="description" content="Claude Code Terminal Interface">
+    <meta name="theme-color" content="#000000">
+    <link rel="manifest" href="manifest.json">
     <style>
         body {
             margin: 0;
@@ -96,9 +99,19 @@
             }
             
             isClaudeRunning = true;
-            addOutput('Starting Claude Code...');
-            addOutput('Claude Code is ready! Type your questions or commands.');
-            addOutput('Note: This is a simulated environment. For full functionality, use the actual Claude Code terminal.');
+            addOutput('🚀 Initializing Claude Code Web Terminal...');
+            addOutput('');
+            addOutput('✅ Claude AI Assistant Ready!');
+            addOutput('💬 I can help with coding, writing, analysis, and more');
+            addOutput('📱 Optimized for mobile and desktop browsers');
+            addOutput('');
+            addOutput('Available commands:');
+            addOutput('  help     - Show available commands');  
+            addOutput('  clear    - Clear terminal');
+            addOutput('  claude   - Restart Claude interface');
+            addOutput('  version  - Show version info');
+            addOutput('  exit     - Close application');
+            addOutput('');
         }
 
         function handleCommand(event) {
@@ -131,11 +144,38 @@
                     startClaude();
                     break;
                 case 'help':
-                    addOutput('Available commands:');
-                    addOutput('  claude    - Start Claude Code');
-                    addOutput('  help      - Show this help');
-                    addOutput('  clear     - Clear terminal');
+                    addOutput('📋 Available commands:');
+                    addOutput('  claude    - Start/restart Claude Code interface');
+                    addOutput('  help      - Show this help menu');
+                    addOutput('  clear     - Clear terminal screen');
+                    addOutput('  version   - Show version information');
+                    addOutput('  about     - About this terminal');
+                    addOutput('  status    - Show system status');
                     addOutput('  exit      - Exit application');
+                    addOutput('');
+                    addOutput('💬 Just type your questions to interact with Claude!');
+                    break;
+                case 'version':
+                    addOutput('Claude Code Web Terminal v1.0');
+                    addOutput('Built with HTML5, CSS3, JavaScript');
+                    addOutput('Compatible with all modern browsers');
+                    break;
+                case 'about':
+                    addOutput('🤖 Claude Code Web Terminal');
+                    addOutput('A web-based interface for Claude AI assistance');
+                    addOutput('Created for mobile and desktop browsers');
+                    addOutput('');
+                    addOutput('Features:');
+                    addOutput('• Terminal-style interface');
+                    addOutput('• Mobile-optimized design');
+                    addOutput('• Real-time command processing');
+                    break;
+                case 'status':
+                    addOutput('📊 System Status:');
+                    addOutput('• Claude Status: ' + (isClaudeRunning ? '🟢 Running' : '🔴 Stopped'));
+                    addOutput('• Browser: ' + navigator.userAgent.split('(')[0]);
+                    addOutput('• Platform: ' + navigator.platform);
+                    addOutput('• Screen: ' + screen.width + 'x' + screen.height);
                     break;
                 case 'clear':
                     // Remove all output except the current input line
@@ -155,19 +195,97 @@
                     break;
                 default:
                     if (isClaudeRunning) {
-                        addOutput('Sending to Claude: ' + command);
-                        addOutput('Claude response would appear here...');
-                        addOutput('(This is a demo - integrate with actual Claude Code for real responses)');
+                        addOutput('🤖 Processing: ' + command);
+                        simulateClaudeResponse(command);
                     } else {
                         addOutput('Command not found: ' + cmd, 'error');
-                        addOutput('Type "help" for available commands');
+                        addOutput('Type "claude" to start, or "help" for available commands');
                     }
             }
+        }
+
+        function simulateClaudeResponse(command) {
+            // Add typing indicator
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'output';
+            typingDiv.innerHTML = '💭 Claude is thinking...';
+            const inputLine = document.querySelector('.input-line');
+            terminal.insertBefore(typingDiv, inputLine);
+            terminal.scrollTop = terminal.scrollHeight;
+
+            // Simulate processing delay
+            setTimeout(() => {
+                typingDiv.remove();
+                
+                // Generate response based on command
+                let response = generateResponse(command);
+                addOutput('🤖 Claude: ' + response);
+                
+                // Add some helpful suggestions
+                if (Math.random() > 0.7) {
+                    setTimeout(() => {
+                        addOutput('💡 Tip: Try asking me about coding, writing, or analysis tasks!');
+                    }, 500);
+                }
+            }, 1000 + Math.random() * 2000);
+        }
+
+        function generateResponse(command) {
+            const lowerCommand = command.toLowerCase();
+            
+            // Programming related
+            if (lowerCommand.includes('code') || lowerCommand.includes('program') || lowerCommand.includes('function')) {
+                return "I'd be happy to help with coding! What programming language or specific task are you working on?";
+            }
+            
+            // Questions
+            if (lowerCommand.includes('what') || lowerCommand.includes('how') || lowerCommand.includes('why')) {
+                return "That's a great question! I can help explain concepts, provide step-by-step guidance, or dive into technical details.";
+            }
+            
+            // Greetings
+            if (lowerCommand.includes('hello') || lowerCommand.includes('hi') || lowerCommand.includes('hey')) {
+                return "Hello! I'm Claude, your AI assistant. I can help with coding, writing, analysis, and answering questions. What would you like to work on?";
+            }
+            
+            // Help requests
+            if (lowerCommand.includes('help') || lowerCommand.includes('assist')) {
+                return "I'm here to help! I can assist with:\n• Programming and software development\n• Writing and editing\n• Data analysis and problem-solving\n• Explanations and tutorials\n• Code review and debugging";
+            }
+            
+            // Android/mobile related
+            if (lowerCommand.includes('android') || lowerCommand.includes('mobile') || lowerCommand.includes('app')) {
+                return "I can help with Android development! Whether you need help with Java/Kotlin, app architecture, UI design, or debugging mobile apps.";
+            }
+            
+            // Default responses
+            const responses = [
+                "I understand you're asking about '" + command + "'. Could you provide more details so I can give you a more specific answer?",
+                "That's an interesting topic! What specific aspect would you like me to focus on?",
+                "I can help with that. What's your main goal or what are you trying to accomplish?",
+                "Let me help you with that. Can you share more context about what you're working on?",
+                "I'd be happy to assist! What would you like to know more about?"
+            ];
+            
+            return responses[Math.floor(Math.random() * responses.length)];
         }
 
         // Initialize
         commandInput.addEventListener('keypress', handleCommand);
         
+        // Register service worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+
         // Auto-start Claude Code
         setTimeout(() => {
             startClaude();

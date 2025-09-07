@@ -1,0 +1,84 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+    
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+      with:
+        api-level: 33
+        build-tools: 33.0.0
+    
+    - name: Install dependencies
+      run: npm install --no-bin-links
+    
+    - name: Create settings.json from template
+      run: |
+        cp configuration/settings.template.json configuration/settings.json
+        sed -i 's/YOUR_AUTH_TOKEN_HERE/demo_token/' configuration/settings.json
+    
+    - name: Verify Capacitor config
+      run: |
+        echo "Capacitor config:"
+        cat capacitor.config.json
+    
+    - name: Clean and add Android platform
+      run: |
+        rm -rf android
+        node node_modules/@capacitor/cli/bin/capacitor add android
+    
+    - name: Copy web assets
+      run: node node_modules/@capacitor/cli/bin/capacitor copy android
+    
+    - name: List Android directory
+      run: |
+        echo "Android directory contents:"
+        ls -la android/
+        echo "Gradlew file:"
+        ls -la android/gradlew || echo "gradlew not found"
+    
+    - name: Build APK
+      run: |
+        cd android
+        chmod +x gradlew
+        ./gradlew assembleDebug --no-daemon --stacktrace
+    
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: claude-code-debug-apk
+        path: android/app/build/outputs/apk/debug/app-debug.apk
+        if-no-files-found: error
+    
+    - name: Upload build logs on failure
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-logs
+        path: |
+          android/app/build/outputs/logs/
+          android/build/
+        if-no-files-found: ignore
