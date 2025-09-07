@@ -1,0 +1,10 @@
+# Copy these commands and replace YOUR_USERNAME with your GitHub username
+
+# Connect to your GitHub repository
+git remote add origin https://github.com/YOUR_USERNAME/claude-code-android.git
+
+# Rename branch to main
+git branch -M main
+
+# Push your code to GitHub
+git push -u origin main
